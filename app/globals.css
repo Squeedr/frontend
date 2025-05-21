@@ -1,0 +1,470 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --font-logo: var(--font-montserrat), system-ui, sans-serif;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Role-specific theme variables */
+  .theme-owner {
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border-accent: 221 83% 53%;
+    --theme-color: 221 83% 53%;
+    --theme-color-light: 214 100% 97%;
+    --theme-color-medium: 217 91% 60%;
+    --theme-color-dark: 224 76% 48%;
+    --logo-color: #3b82f6;
+    --logo-bg-color: #dbeafe;
+  }
+
+  .theme-expert {
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 0 0% 45%;
+    --accent-foreground: 0 0% 100%;
+    --border-accent: 0 0% 9%;
+    --theme-color: 0 0% 9%;
+    --theme-color-light: 0 0% 96%;
+    --theme-color-medium: 0 0% 45%;
+    --theme-color-dark: 0 0% 4%;
+    --logo-color: #171717;
+    --logo-bg-color: #f5f5f5;
+  }
+
+  .theme-client {
+    --primary: 273 91% 48%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 269 97% 70%;
+    --accent-foreground: 0 0% 100%;
+    --border-accent: 273 91% 48%;
+    --theme-color: 273 91% 48%;
+    --theme-color-light: 270 100% 98%;
+    --theme-color-medium: 269 97% 70%;
+    --theme-color-dark: 273 81% 36%;
+    --logo-color: #8b5cf6;
+    --logo-bg-color: #ede9fe;
+  }
+
+  .dark.theme-owner {
+    --logo-color: #60a5fa;
+    --logo-bg-color: #1e3a8a;
+  }
+
+  .dark.theme-expert {
+    --logo-color: #a3a3a3;
+    --logo-bg-color: #171717;
+  }
+
+  .dark.theme-client {
+    --logo-color: #a78bfa;
+    --logo-bg-color: #4c1d95;
+  }
+}
+
+@layer components {
+  /* Role-specific component styles */
+  .theme-owner .role-accent-bg {
+    @apply bg-blue-500;
+  }
+
+  .theme-expert .role-accent-bg {
+    @apply bg-gray-900;
+  }
+
+  .theme-client .role-accent-bg {
+    @apply bg-purple-500;
+  }
+
+  .theme-owner .role-accent-text {
+    @apply text-blue-600;
+  }
+
+  .theme-expert .role-accent-text {
+    @apply text-gray-900;
+  }
+
+  .theme-client .role-accent-text {
+    @apply text-purple-600;
+  }
+
+  .theme-owner .role-accent-border {
+    @apply border-blue-500;
+  }
+
+  .theme-expert .role-accent-border {
+    @apply border-gray-900;
+  }
+
+  .theme-client .role-accent-border {
+    @apply border-purple-500;
+  }
+
+  /* Role transition animations */
+  .role-transition-container {
+    @apply transition-all duration-500 ease-in-out;
+  }
+
+  .role-transition-enter {
+    @apply animate-fade-in;
+  }
+
+  .role-transition-exit {
+    @apply animate-fade-out;
+  }
+
+  /* Role badge styles */
+  .role-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .role-badge-owner {
+    @apply bg-blue-100 text-blue-800 border border-blue-300;
+  }
+
+  .role-badge-expert {
+    @apply bg-gray-100 text-gray-800 border border-gray-300;
+  }
+
+  .role-badge-client {
+    @apply bg-purple-100 text-purple-800 border border-purple-300;
+  }
+
+  /* Role-specific card styles */
+  .role-card {
+    @apply border rounded-lg shadow-sm transition-all duration-300 hover:shadow-md;
+  }
+
+  .theme-owner .role-card-accent {
+    @apply border-l-4 border-l-blue-500;
+  }
+
+  .theme-expert .role-card-accent {
+    @apply border-l-4 border-l-gray-900;
+  }
+
+  .theme-client .role-card-accent {
+    @apply border-l-4 border-l-purple-500;
+  }
+
+  /* Role-specific button styles */
+  .theme-owner .role-button {
+    @apply bg-blue-600 hover:bg-blue-700 text-white;
+  }
+
+  .theme-expert .role-button {
+    @apply bg-gray-900 hover:bg-gray-800 text-white;
+  }
+
+  .theme-client .role-button {
+    @apply bg-purple-600 hover:bg-purple-700 text-white;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .role-highlight {
+    @apply transition-colors duration-300;
+  }
+
+  .theme-owner .role-highlight {
+    @apply bg-blue-50;
+  }
+
+  .theme-expert .role-highlight {
+    @apply bg-gray-50;
+  }
+
+  .theme-client .role-highlight {
+    @apply bg-purple-50;
+  }
+
+  .logo-font {
+    font-family: var(--font-logo);
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+}
+
+/* Role-specific styling */
+.role-accent-text {
+  color: var(--role-color);
+}
+
+.role-button {
+  background-color: var(--role-color);
+  border-color: var(--role-color);
+}
+
+.role-button:hover {
+  background-color: var(--role-color-hover);
+  border-color: var(--role-color-hover);
+}
+
+.role-card-accent {
+  border-left: 4px solid var(--role-color);
+}
+
+/* Role-specific colors */
+[data-role="owner"] {
+  --role-color: #3b82f6;
+  --role-color-hover: #2563eb;
+}
+
+[data-role="expert"] {
+  --role-color: #171717;
+  --role-color-hover: #404040;
+}
+
+[data-role="client"] {
+  --role-color: #8b5cf6;
+  --role-color-hover: #7c3aed;
+}
+
+/* Animation for role switching */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+/* Profile reminder animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.profile-reminder-enter {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.profile-reminder-exit {
+  animation: slideInRight 0.3s ease-in reverse forwards;
+}
+
+/* Logo transition and animation styles */
+.logo-collapsing {
+  animation: logoCollapse 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logo-expanding {
+  animation: logoExpand 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logo-svg-animate {
+  display: inline-block;
+  animation: logoSvgTransition 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes logoCollapse {
+  0% {
+    width: auto;
+    opacity: 1;
+  }
+  100% {
+    width: 32px;
+    opacity: 0.9;
+  }
+}
+
+@keyframes logoExpand {
+  0% {
+    width: 32px;
+    opacity: 0.9;
+  }
+  100% {
+    width: auto;
+    opacity: 1;
+  }
+}
+
+@keyframes logoSvgTransition {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Required field indicator */
+label.required:after {
+  content: "*";
+  color: hsl(var(--destructive));
+  margin-left: 0.25rem;
+}
+
+/* Responsive sidebar transitions */
+@media (max-width: 1023px) {
+  .sidebar-auto-collapse {
+    width: 4rem !important;
+  }
+
+  .sidebar-auto-collapse .sidebar-text {
+    display: none;
+  }
+
+  .sidebar-auto-collapse .sidebar-icon {
+    margin-right: 0 !important;
+  }
+
+  .sidebar-auto-collapse .sidebar-toggle {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* Tooltip for collapsed sidebar items */
+.sidebar-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 50;
+}
+
+.sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+}
+
+/* Role-based logo colors */
+.theme-owner .role-logo-text {
+  color: var(--logo-color);
+  transition: color 0.3s ease;
+}
+
+.theme-expert .role-logo-text {
+  color: var(--logo-color);
+  transition: color 0.3s ease;
+}
+
+.theme-client .role-logo-text {
+  color: var(--logo-color);
+  transition: color 0.3s ease;
+}
+
+.theme-owner .role-logo-bg {
+  background-color: var(--logo-bg-color);
+  transition: background-color 0.3s ease;
+}
+
+.theme-expert .role-logo-bg {
+  background-color: var(--logo-bg-color);
+  transition: background-color 0.3s ease;
+}
+
+.theme-client .role-logo-bg {
+  background-color: var(--logo-bg-color);
+  transition: background-color 0.3s ease;
+}
