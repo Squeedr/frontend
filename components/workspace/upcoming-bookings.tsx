@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 interface Booking {
   id: string
@@ -130,10 +131,13 @@ export function UpcomingBookings({ limit = 3, showTitle = true, className = "" }
             <Card key={booking.id} className="overflow-hidden">
               <div className="flex flex-col sm:flex-row">
                 <div className="h-24 w-full sm:h-auto sm:w-32 bg-muted">
-                  <img
+                  <OptimizedImage
                     src={booking.image || "/abstract-geometric-shapes.png"}
                     alt={booking.workspaceName}
-                    className="h-full w-full object-cover"
+                    width={128}
+                    height={96}
+                    objectFit="cover"
+                    className="h-full w-full"
                   />
                 </div>
                 <div className="flex flex-1 flex-col">

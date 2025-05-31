@@ -13,6 +13,7 @@ import { BookingConfirmationDialog } from "@/components/expert/booking-confirmat
 import { ResourceSummary } from "@/components/workspace/resource-summary"
 import type { ResourceReservation } from "@/lib/types/resources"
 import { calculateResourcesCost } from "@/lib/mock-resources-data"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 // Mock data for expert's upcoming bookings
 const initialBookings = [
@@ -173,10 +174,13 @@ export function ExpertBookingsManager() {
           <Card key={booking.id} className="overflow-hidden">
             <div className="flex flex-col sm:flex-row">
               <div className="h-32 w-full sm:h-auto sm:w-40 bg-muted">
-                <img
+                <OptimizedImage
                   src={booking.image || "/abstract-geometric-shapes.png"}
                   alt={booking.workspaceName}
-                  className="h-full w-full object-cover"
+                  width={160}
+                  height={128}
+                  objectFit="cover"
+                  className="h-full w-full"
                 />
               </div>
               <div className="flex flex-1 flex-col p-4">

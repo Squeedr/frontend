@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { PlusCircle } from "lucide-react"
+import axios from "axios"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +16,7 @@ import {
 import { WorkspaceForm, type WorkspaceFormValues } from "@/components/workspace-form"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from "uuid"
+import { workspacesApi } from "@/lib/api/workspaces"
 
 interface CreateWorkspaceModalProps {
   onWorkspaceCreated: (workspace: any) => void
@@ -42,28 +44,21 @@ export function CreateWorkspaceModal({
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Create a new workspace object
-      const newWorkspace = {
-        id: uuidv4(),
+      // Real API call to Strapi backend
+      const response = await workspacesApi.create({
         name: data.name,
         description: data.description || "",
         location: data.location,
         capacity: data.capacity,
-        experts: 0,
-        sessions: 0,
-        revenue: 0,
-        utilization: 0,
-        createdAt: new Date().toISOString(),
-        amenities: ["High-speed WiFi"],
+        type: data.type,
+        hourlyRate: data.hourlyRate,
+        amenities: data.amenities || [],
+        image: data.image,
         availability: "Available",
-        image: "/abstract-geometric-shapes.png",
-      }
+      })
 
       // Call the callback to update the parent component
-      onWorkspaceCreated(newWorkspace)
+      onWorkspaceCreated(response.data)
 
       // Show success toast
       toast({
@@ -74,6 +69,7 @@ export function CreateWorkspaceModal({
       // Close the modal
       setOpen(false)
     } catch (error) {
+      console.error("Error creating workspace:", error)
       toast({
         title: "Error creating workspace",
         description: "There was a problem creating the workspace. Please try again.",
@@ -94,7 +90,7 @@ export function CreateWorkspaceModal({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-full max-w-2xl p-4 md:p-8">
         <DialogHeader>
           <DialogTitle>Create New Workspace</DialogTitle>
           <DialogDescription>

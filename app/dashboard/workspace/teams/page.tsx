@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Users, FolderKanban, Calendar } from "lucide-react"
+import { getAvatarImage } from "@/lib/image-utils"
 
 export default function TeamsPage() {
   return (
@@ -65,7 +66,7 @@ function TeamCard({ team }: { team: Team }) {
           {displayMembers.map((member) => (
             <Avatar key={member.id} className="border-2 border-white h-8 w-8">
               {member.avatar ? (
-                <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
+                <AvatarImage src={getAvatarImage(member.avatar || "placeholder.svg")} alt={member.name} />
               ) : (
                 <AvatarFallback className="text-xs">
                   {member.name

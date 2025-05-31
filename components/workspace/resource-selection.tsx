@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { availableResources, getResourcesByCategory, calculateResourcesCost } from "@/lib/mock-resources-data"
 import type { ResourceReservation } from "@/lib/types/resources"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 // Group resources by category
 const resourceCategories = [
@@ -98,10 +99,13 @@ export function ResourceSelection({ selectedResources, onChange }: ResourceSelec
                           <div className="flex items-center space-x-3">
                             <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
                               {resource.image ? (
-                                <img
+                                <OptimizedImage
                                   src={resource.image || "/placeholder.svg"}
                                   alt={resource.name}
-                                  className="h-full w-full object-cover"
+                                  width={40}
+                                  height={40}
+                                  objectFit="cover"
+                                  className="h-full w-full"
                                 />
                               ) : (
                                 <div className="text-xs text-center text-muted-foreground p-1">

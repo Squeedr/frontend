@@ -1,5 +1,7 @@
 import { MapPin, Users, Monitor, Wifi, Coffee } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { getWorkspaceImage } from "@/lib/image-utils"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 // Mock workspace data with more details
 const workspaceDetails = {
@@ -106,7 +108,14 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
   return (
     <div className="space-y-4">
       <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
-        <img src={workspace.image || "/placeholder.svg"} alt={workspace.name} className="h-full w-full object-cover" />
+        <OptimizedImage
+          src={getWorkspaceImage(workspace.image || "placeholder.svg")}
+          alt={workspace.name}
+          width={800}
+          height={450}
+          objectFit="cover"
+          className="h-full w-full"
+        />
       </div>
 
       <div>

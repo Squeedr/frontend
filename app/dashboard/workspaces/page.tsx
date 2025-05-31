@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter } from "lucide-react"
+import { Search, Filter, Plus } from "lucide-react"
 import { useRole } from "@/hooks/use-role"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
@@ -9,42 +9,82 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CreateActionButton } from "@/components/create-action-button"
-import { workspaces } from "@/lib/mock-data"
+import { workspacesApi } from "@/lib/api/workspaces"
+import { getWorkspaceImage } from "@/lib/image-utils"
+import { OptimizedImage } from "@/components/ui/optimized-image"
+import { CreateWorkspaceModal } from "@/components/create-workspace-modal"
+import { useToast } from "@/hooks/use-toast"
+import type { Workspace } from "@/lib/types"
 
 export default function WorkspacesPage() {
   const { role } = useRole()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [filteredWorkspaces, setFilteredWorkspaces] = useState(workspaces)
+  const [workspacesList, setWorkspacesList] = useState<Workspace[]>([])
+  const [isCreateWorkspaceModalOpen, setIsCreateWorkspaceModalOpen] = useState(false)
 
-  // Simulate loading state
+  // Fetch workspaces from the backend on page load
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+    const fetchWorkspaces = async () => {
+      try {
+        const response = await workspacesApi.getAll()
+        // Strapi returns data in a specific format, we need to extract the actual workspaces
+        const workspaces = response.data || []
+        setWorkspacesList(workspaces)
+      } catch (error) {
+        console.error("Error fetching workspaces:", error)
+        toast({
+          title: "Error fetching workspaces",
+          description: "There was a problem loading workspaces. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-    return () => clearTimeout(timer)
-  }, [])
+    fetchWorkspaces()
+  }, [toast])
 
   // Filter workspaces based on search query
   useEffect(() => {
     if (searchQuery.trim() === "") {
-      setFilteredWorkspaces(workspaces)
+      // If search is empty, fetch all workspaces again
+      const fetchWorkspaces = async () => {
+        try {
+          const response = await workspacesApi.getAll()
+          const workspaces = response.data || []
+          setWorkspacesList(workspaces)
+        } catch (error) {
+          console.error("Error fetching workspaces:", error)
+        }
+      }
+      
+      fetchWorkspaces()
     } else {
+      // If search has a value, filter on the client side
       const query = searchQuery.toLowerCase()
-      const filtered = workspaces.filter(
+      const filtered = workspacesList.filter(
         (workspace) =>
           workspace.name.toLowerCase().includes(query) ||
           workspace.description.toLowerCase().includes(query) ||
           workspace.location.toLowerCase().includes(query),
       )
-      setFilteredWorkspaces(filtered)
+      setWorkspacesList(filtered)
     }
   }, [searchQuery])
 
   // Only owners can create/edit/delete workspaces
   const canManageWorkspaces = role === "owner"
+
+  const handleWorkspaceCreated = (newWorkspace: Workspace) => {
+    setWorkspacesList(prev => [newWorkspace, ...prev])
+    toast({
+      title: "Workspace Created",
+      description: `${newWorkspace.name} has been created successfully.`,
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -71,9 +111,21 @@ export default function WorkspacesPage() {
             <span className="sr-only">Filter</span>
           </Button>
 
-          {canManageWorkspaces && <CreateActionButton />}
+          {canManageWorkspaces && (
+            <Button onClick={() => setIsCreateWorkspaceModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Workspace
+            </Button>
+          )}
         </div>
       </div>
+
+      <CreateWorkspaceModal 
+        isOpen={isCreateWorkspaceModalOpen}
+        onOpenChange={setIsCreateWorkspaceModalOpen}
+        onWorkspaceCreated={handleWorkspaceCreated}
+        hideButton={true}
+      />
 
       <Tabs defaultValue="all">
         <TabsList>
@@ -104,18 +156,21 @@ export default function WorkspacesPage() {
                   </Card>
                 ))}
             </div>
-          ) : filteredWorkspaces.length > 0 ? (
+          ) : workspacesList.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredWorkspaces.map((workspace) => (
+              {workspacesList.map((workspace) => (
                 <Card key={workspace.id} className="overflow-hidden">
                   <div className="relative h-48 bg-muted">
-                    <img
-                      src={workspace.image || "/abstract-geometric-shapes.png"}
+                    <OptimizedImage
+                      src={getWorkspaceImage(workspace.image || "abstract-geometric-shapes.png")}
                       alt={workspace.name}
-                      className="object-cover w-full h-full"
+                      width={400}
+                      height={200}
+                      objectFit="cover"
+                      className="w-full h-full"
                     />
                     <Badge
-                      variant={workspace.availability === "Available" ? "success" : "destructive"}
+                      variant={workspace.availability === "Available" ? "default" : "destructive"}
                       className="absolute top-2 right-2"
                     >
                       {workspace.availability}
