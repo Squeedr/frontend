@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Mail, Phone, MapPin, Calendar, User, Edit } from "lucide-react"
 import { ProfileCompletionCircle } from "./profile/profile-completion-circle"
 import type { UserProfileData } from "@/lib/profile-completion"
+import { getAvatarImage } from "@/lib/image-utils"
+import { UserAvatar } from "@/components/ui/user-avatar"
 
 interface ProfileCardProps {
   user: UserProfileData
@@ -34,10 +36,14 @@ export default function ProfileCard({ user, onEdit }: ProfileCardProps) {
           <div className="flex flex-col items-center md:items-start">
             <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
               {user.avatar ? (
-                <Avatar className="h-32 w-32">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  user={{
+                    name: user.name,
+                    email: user.email,
+                    image: user.avatar
+                  }}
+                  size="xl"
+                />
               ) : (
                 <User className="h-16 w-16 text-gray-500" />
               )}

@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Eye, Pencil, Trash, Ban, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import { getAvatarImage } from "@/lib/image-utils"
+import { UserAvatar } from "@/components/ui/user-avatar"
 
 interface UserTableProps {
   users: User[]
@@ -165,10 +167,14 @@ export function UserTable({ users, onUpdateUser, onDeleteUser }: UserTableProps)
                 </td>
                 <td className="p-2">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatarUrl || "/placeholder.svg"} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      user={{
+                        name: user.name,
+                        email: user.email,
+                        image: user.avatarUrl
+                      }}
+                      size="sm"
+                    />
                     <a href={`/dashboard/profile?id=${user.id}`} className="font-medium hover:underline">
                       {user.name}
                     </a>
@@ -193,7 +199,10 @@ export function UserTable({ users, onUpdateUser, onDeleteUser }: UserTableProps)
                   </Select>
                 </td>
                 <td className="p-2">
-                  <Badge variant={getStatusBadgeVariant(user.status)} className="capitalize">
+                  <Badge
+                    variant={user.status === "active" ? "default" : "destructive"}
+                    className="capitalize"
+                  >
                     {user.status}
                   </Badge>
                 </td>

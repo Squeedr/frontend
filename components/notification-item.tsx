@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { getAvatarImage } from "@/lib/image-utils"
 
 export interface NotificationItemProps {
   id: string
@@ -85,7 +86,7 @@ export function NotificationItem({
         <div className="flex items-start gap-4">
           {sender ? (
             <Avatar className="h-10 w-10">
-              <AvatarImage src={sender.avatar || "/placeholder.svg"} alt={sender.name} />
+              <AvatarImage src={getAvatarImage(sender.avatar || "placeholder.svg")} alt={sender.name} />
               <AvatarFallback>{sender.initials}</AvatarFallback>
             </Avatar>
           ) : (

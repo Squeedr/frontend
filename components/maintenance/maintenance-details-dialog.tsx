@@ -18,10 +18,11 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import type { MaintenanceTask, MaintenanceLog } from "@/lib/maintenance-types"
 import { getMaintenanceTaskLogs } from "@/lib/mock-maintenance-data"
 import { useToast } from "@/hooks/use-toast"
+import { getAvatarImage } from "@/lib/image-utils"
 
 interface MaintenanceDetailsDialogProps {
   task: MaintenanceTask
@@ -161,12 +162,13 @@ export function MaintenanceDetailsDialog({ task, onStatusChange, trigger }: Main
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-2">Assigned To</h4>
               <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt={task.assigneeName} />
-                  <AvatarFallback>
-                    {task.assigneeName ? task.assigneeName.substring(0, 2).toUpperCase() : "NA"}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  user={{
+                    name: task.assigneeName || "Not assigned",
+                    image: "placeholder.svg"
+                  }}
+                  size="md"
+                />
                 <span>{task.assigneeName || "Not assigned"}</span>
               </div>
             </div>
@@ -215,9 +217,13 @@ export function MaintenanceDetailsDialog({ task, onStatusChange, trigger }: Main
                     <div key={log.id} className="border rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>{log.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar 
+                            user={{
+                              name: log.userName,
+                              image: "placeholder.svg"
+                            }}
+                            size="sm"
+                          />
                           <span className="font-medium">{log.userName}</span>
                         </div>
                         <span className="text-xs text-muted-foreground">{format(new Date(log.timestamp), "PPp")}</span>

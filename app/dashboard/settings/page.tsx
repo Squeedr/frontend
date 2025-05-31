@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { RoleSpecificSettings } from "@/components/role-specific-settings"
 import { useRole } from "@/hooks/use-role"
 import { Bell, Info, Shield, User, Zap } from "lucide-react"
+import { getAvatarImage } from "@/lib/image-utils"
 
 export default function SettingsPage() {
   const { role } = useRole()
@@ -88,7 +89,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src="/diverse-avatars.png" alt="User" />
+            <AvatarImage src={getAvatarImage("diverse-avatars.png")} alt="User" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           <div>

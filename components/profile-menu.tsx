@@ -20,7 +20,6 @@ import {
 } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -38,6 +37,8 @@ import {
 import { useRole } from "@/hooks/use-role"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { UserAvatar } from "@/components/ui/user-avatar"
+import { mockUsers } from "@/lib/mock-access"
 
 // Optimize the component with React.memo and useCallback
 const ProfileMenu = React.memo(function ProfileMenu() {
@@ -47,15 +48,23 @@ const ProfileMenu = React.memo(function ProfileMenu() {
   const [theme, setTheme] = React.useState<"light" | "dark" | "system">("light")
   const [status, setStatus] = React.useState<"online" | "away" | "busy" | "offline">("online")
 
+  // Get mock user data based on role
+  const currentUser = React.useMemo(() => {
+    // Find a user with the current role
+    const userWithRole = mockUsers.find(user => user.role === role)
+    // If no user with the current role, use the first user
+    return userWithRole || mockUsers[0]
+  }, [role])
+
   // Memoize event handlers
   const handleLogout = React.useCallback(() => {
     toast({
       title: "Logged out",
       description: "You have been logged out successfully.",
     })
-    // Redirect to login page
+    // Redirect to auth page
     setTimeout(() => {
-      router.push("/login")
+      router.push("/auth")
     }, 1000)
   }, [toast, router])
 
@@ -97,10 +106,14 @@ const ProfileMenu = React.memo(function ProfileMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src="/diverse-avatars.png" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={{
+              name: currentUser.name,
+              email: currentUser.email,
+              image: currentUser.avatarUrl
+            }}
+            size="md"
+          />
           <span
             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${getStatusColor()}`}
           />
@@ -110,12 +123,12 @@ const ProfileMenu = React.memo(function ProfileMenu() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium leading-none">Jane Doe</p>
+              <p className="text-sm font-medium leading-none">{currentUser.name}</p>
               <Badge variant="outline" className="text-xs">
-                Pro Plan
+                {role.charAt(0).toUpperCase() + role.slice(1)}
               </Badge>
             </div>
-            <p className="text-xs leading-none text-muted-foreground">jane.doe@example.com</p>
+            <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
             <div className="flex items-center gap-2 mt-2">
               <div className={`h-2 w-2 rounded-full ${getStatusColor()}`} />
               <p className="text-xs text-muted-foreground">{getStatusLabel()}</p>
@@ -217,36 +230,7 @@ const ProfileMenu = React.memo(function ProfileMenu() {
           </DropdownMenuPortal>
         </DropdownMenuSub>
 
-        {/* Security submenu */}
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            <span>Security</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuPortal>
-            <DropdownMenuSubContent className="w-56">
-              <DropdownMenuItem asChild className="flex items-center gap-2">
-                <Link href="/dashboard/security/change-password">
-                  <Key className="h-4 w-4 mr-2" />
-                  Change Password
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Two-factor Authentication</span>
-                </div>
-                <Switch checked={true} />
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="flex items-center gap-2">
-                <Link href="/dashboard/security/log">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Security Log
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuPortal>
-        </DropdownMenuSub>
+        <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild className="flex items-center gap-2">
           <Link href="/support">
@@ -255,14 +239,29 @@ const ProfileMenu = React.memo(function ProfileMenu() {
           </Link>
         </DropdownMenuItem>
 
+        <DropdownMenuItem asChild className="flex items-center gap-2">
+          <Link href="/dashboard/security">
+            <Shield className="h-4 w-4 mr-2" />
+            Security
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild className="flex items-center gap-2">
+          <Link href="/dashboard/api-keys">
+            <Key className="h-4 w-4 mr-2" />
+            API Keys
+          </Link>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex items-center gap-2" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" />
-          <span>Log out</span>
+
+        <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-red-600">
+          <LogOut className="h-4 w-4 mr-2" />
+          Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
 })
 
-export default ProfileMenu
+export { ProfileMenu }

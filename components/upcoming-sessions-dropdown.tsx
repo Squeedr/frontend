@@ -17,9 +17,10 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRole } from "@/hooks/use-role"
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
+import { getAvatarImage } from "@/lib/image-utils"
 
 // Session type definition
 interface Session {
@@ -439,10 +440,13 @@ export const UpcomingSessionsDropdown = React.memo(function UpcomingSessionsDrop
                     <div className="cursor-pointer p-2 hover:bg-gray-50 rounded-md">
                       <div className="flex justify-between items-start">
                         <div className="flex gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={session.with.avatar || "/placeholder.svg"} alt={session.with.name} />
-                            <AvatarFallback>{session.with.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar 
+                            user={{
+                              name: session.with.name,
+                              image: session.with.avatar
+                            }}
+                            size="md"
+                          />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-medium">{session.title}</h4>
@@ -544,10 +548,13 @@ export const UpcomingSessionsDropdown = React.memo(function UpcomingSessionsDrop
                     <div className="cursor-pointer p-2 hover:bg-gray-50 rounded-md">
                       <div className="flex justify-between items-start">
                         <div className="flex gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={session.with.avatar || "/placeholder.svg"} alt={session.with.name} />
-                            <AvatarFallback>{session.with.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar 
+                            user={{
+                              name: session.with.name,
+                              image: session.with.avatar
+                            }}
+                            size="md"
+                          />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-medium">{session.title}</h4>

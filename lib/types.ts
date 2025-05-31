@@ -65,7 +65,7 @@ export interface Availability {
 export interface Workspace {
   id: string
   name: string
-  description?: string
+  description: string
   experts: number
   sessions: number
   revenue: number
@@ -73,11 +73,13 @@ export interface Workspace {
   createdAt?: string
   members?: string[]
   owner?: string
-  location?: string
-  capacity?: number
-  amenities?: string[]
-  availability?: string
-  image?: string
+  location: string
+  capacity: number
+  amenities: string[]
+  availability: string
+  image: string
+  type: string
+  hourlyRate?: number
 }
 
 // Invoice Types

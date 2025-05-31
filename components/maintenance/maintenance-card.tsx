@@ -4,9 +4,10 @@ import { Clock, PenToolIcon as Tool, Calendar, AlertTriangle } from "lucide-reac
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import type { MaintenanceTask } from "@/lib/maintenance-types"
 import { MaintenanceDetailsDialog } from "./maintenance-details-dialog"
+import { getAvatarImage } from "@/lib/image-utils"
 
 interface MaintenanceCardProps {
   task: MaintenanceTask
@@ -117,12 +118,14 @@ export function MaintenanceCard({ task, onStatusChange }: MaintenanceCardProps) 
       </CardContent>
       <CardFooter className="flex justify-between pt-2">
         <div className="flex items-center">
-          <Avatar className="h-6 w-6 mr-2">
-            <AvatarImage src="/placeholder.svg" alt={task.assigneeName} />
-            <AvatarFallback>
-              {task.assigneeName ? task.assigneeName.substring(0, 2).toUpperCase() : "NA"}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={{
+              name: task.assigneeName || "Unassigned",
+              image: "placeholder.svg"
+            }}
+            size="sm"
+            className="mr-2"
+          />
           <span className="text-xs text-muted-foreground">{task.assigneeName || "Unassigned"}</span>
         </div>
         <MaintenanceDetailsDialog

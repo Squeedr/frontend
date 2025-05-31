@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { PermissionGuard } from "@/components/guards/permission-guard"
 import { ModifyBookingDialog } from "@/components/expert/modify-booking-dialog"
 import { BookingConfirmationDialog } from "@/components/expert/booking-confirmation-dialog"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 // Mock data for expert bookings
 const mockExpertBookings = [
@@ -105,7 +106,7 @@ export function ExpertBookingsDashboard() {
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false)
-  const [confirmationAction, setConfirmationAction] = useState<"cancel" | "modify" | null>(null)
+  const [confirmationAction, setConfirmationAction] = useState<"cancel" | "modify">("cancel")
 
   // Filter bookings based on search query and filters
   const filteredBookings = bookings.filter((booking) => {
@@ -236,11 +237,14 @@ export function ExpertBookingsDashboard() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {upcomingBookings.map((booking) => (
                   <Card key={booking.id} className="overflow-hidden">
-                    <div className="aspect-video w-full overflow-hidden">
-                      <img
-                        src={booking.image || "/placeholder.svg"}
+                    <div className="h-24 w-full sm:h-auto sm:w-32 bg-muted">
+                      <OptimizedImage
+                        src={booking.image || "/abstract-geometric-shapes.png"}
                         alt={booking.workspaceName}
-                        className="h-full w-full object-cover"
+                        width={128}
+                        height={96}
+                        objectFit="cover"
+                        className="h-full w-full"
                       />
                     </div>
                     <CardHeader className="p-4 pb-2">
@@ -312,11 +316,14 @@ export function ExpertBookingsDashboard() {
                     key={booking.id}
                     className={`overflow-hidden ${booking.status === "cancelled" ? "opacity-75" : ""}`}
                   >
-                    <div className="aspect-video w-full overflow-hidden">
-                      <img
-                        src={booking.image || "/placeholder.svg"}
+                    <div className="h-24 w-full sm:h-auto sm:w-32 bg-muted">
+                      <OptimizedImage
+                        src={booking.image || "/abstract-geometric-shapes.png"}
                         alt={booking.workspaceName}
-                        className="h-full w-full object-cover"
+                        width={128}
+                        height={96}
+                        objectFit="cover"
+                        className="h-full w-full"
                       />
                     </div>
                     <CardHeader className="p-4 pb-2">

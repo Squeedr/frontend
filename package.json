@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:cors": "node scripts/test-cors.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -40,10 +41,11 @@
     "@radix-ui/react-tooltip": "latest",
     "@types/hoist-non-react-statics": "latest",
     "autoprefixer": "^10.4.20",
+    "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
-    "date-fns": "latest",
+    "date-fns": "^2.30.0",
     "embla-carousel-react": "latest",
     "framer-motion": "latest",
     "input-otp": "latest",
@@ -55,15 +57,18 @@
     "react-dnd": "latest",
     "react-dnd-html5-backend": "latest",
     "react-dom": "^19",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "latest",
     "react-resizable-panels": "latest",
     "recharts": "latest",
     "sonner": "latest",
+    "swr": "^2.3.3",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "latest",
     "vaul": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@types/node": "^22",

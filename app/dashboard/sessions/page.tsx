@@ -1,67 +1,76 @@
 "use client"
 
-import { useState } from "react"
-import { Calendar, Clock, DollarSign, MoreHorizontal, User, Video, Eye } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Calendar, Clock, DollarSign, MoreHorizontal, User, Video, Eye, PlusCircle } from "lucide-react"
+import { v4 as uuidv4 } from "uuid"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SearchFilter } from "@/components/search-filter"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRole } from "@/hooks/use-role"
-import { sessions as initialSessions, filterOptions } from "@/lib/mock-data"
+import { filterOptions } from "@/lib/mock-data"
 import type { Session } from "@/lib/mock-data"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { RecordingDialog } from "@/components/recording-dialog"
 import { SessionDetailsDialog } from "@/components/session-details-dialog"
 import { Badge } from "@/components/ui/badge"
+import { useSessionStore } from "@/stores/sessionStore"
+import { useState as useReactState } from "react"
+import { CreateSessionModal } from "@/components/create-session-modal"
 
 export default function SessionsPage() {
   const { role } = useRole()
-  const [sessions, setSessions] = useState<Session[]>(initialSessions)
-  const [filteredSessions, setFilteredSessions] = useState<Session[]>(initialSessions)
+  const sessions = useSessionStore((state) => state.sessions)
+  const addSession = useSessionStore((state) => state.addSession)
+  const setSessions = useSessionStore((state) => state.setSessions)
+  const [filteredSessions, setFilteredSessions] = useState<Session[]>([])
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [isRecordingDialogOpen, setIsRecordingDialogOpen] = useState(false)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [activeFilters, setActiveFilters] = useState<any>({})
+
+  // Debug: log every render
+  console.log("SessionsPage render", { sessionsLength: sessions.length, filteredSessionsLength: filteredSessions.length })
+
+  // Update filteredSessions whenever sessions, searchQuery, or activeFilters change
+  useEffect(() => {
+    let filtered = [...sessions]
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (session) =>
+          session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          session.expertName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          session.clientName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    if (activeFilters.workspace) {
+      filtered = filtered.filter((session) => session.workspace === activeFilters.workspace)
+    }
+    if (activeFilters.status) {
+      filtered = filtered.filter((session) => session.status === activeFilters.status)
+    }
+    // Only update if different
+    if (filtered.length !== filteredSessions.length || filtered.some((s, i) => s.id !== filteredSessions[i]?.id)) {
+      setFilteredSessions(filtered)
+      console.log("useEffect: filteredSessions updated", { filteredLength: filtered.length })
+    }
+  }, [sessions, searchQuery, activeFilters])
 
   const handleSearch = (query: string) => {
-    if (!query) {
-      setFilteredSessions(sessions)
-      return
-    }
-
-    const filtered = sessions.filter(
-      (session) =>
-        session.title.toLowerCase().includes(query.toLowerCase()) ||
-        session.expertName.toLowerCase().includes(query.toLowerCase()) ||
-        session.clientName.toLowerCase().includes(query.toLowerCase()),
-    )
-
-    setFilteredSessions(filtered)
+    setSearchQuery(query)
   }
 
   const handleFilter = (filters: any) => {
-    let filtered = [...sessions]
-
-    if (filters.workspace) {
-      filtered = filtered.filter((session) => session.workspace === filters.workspace)
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter((session) => session.status === filters.status)
-    }
-
-    // Date range filtering would go here
-
-    setFilteredSessions(filtered)
+    setActiveFilters(filters)
   }
 
   const handleRecordingComplete = (sessionId: string, recordingUrl: string) => {
     const updatedSessions = sessions.map((session) =>
       session.id === sessionId ? { ...session, recordingUrl, status: "completed" as const } : session,
     )
-
     setSessions(updatedSessions)
-    setFilteredSessions(updatedSessions)
   }
 
   const openRecordingDialog = (session: Session) => {
@@ -76,6 +85,10 @@ export default function SessionsPage() {
 
   const canRecordSession = (session: Session) => {
     return (role === "owner" || role === "expert") && session.status === "in-progress"
+  }
+
+  const handleSessionCreated = (newSession: Session) => {
+    addSession(newSession)
   }
 
   return (
@@ -94,8 +107,11 @@ export default function SessionsPage() {
             ics: true,
           }}
         />
-
-        {role === "owner" && <Button className="bg-black hover:bg-gray-800 text-white">Create Session</Button>}
+        <div className="flex items-center gap-2">
+          {(role === "owner" || role === "expert") && (
+            <CreateSessionModal onSessionCreated={handleSessionCreated} />
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4">

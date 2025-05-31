@@ -1,135 +1,131 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRole } from "@/hooks/use-role"
 import ProfileCard from "@/components/profile-card"
 import { ProfileCompletionIndicator } from "@/components/profile/profile-completion-indicator"
 import { useToast } from "@/hooks/use-toast"
 import type { UserProfileData } from "@/lib/profile-completion"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { UserAvatar } from "@/components/ui/user-avatar"
+import { useUser } from "@/lib/user-context"
+import { updateUserProfile } from "@/lib/api/auth"
 
 export default function ProfilePage() {
-  const { role } = useRole()
+  const { role, token } = useRole()
   const { toast } = useToast()
+  const { user: profile, setUser } = useUser()
   const [editingField, setEditingField] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(profile.avatar)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Mock user data based on role
-  const userData = {
-    owner: {
-      name: "John Doe",
-      email: "john@squeedr.com",
-      phone: "+1 (555) 123-4567",
-      location: "San Francisco, CA",
-      bio: "Platform owner and administrator with over 10 years of experience in managing expert networks.",
-      joinDate: "January 2022",
-      role: "owner",
-      company: "Squeedr Inc.",
-      businessCategory: "Technology",
-      paymentInfo: true,
-      stats: {
-        experts: 25,
-        sessions: 150,
-        workspaces: 8,
-      },
-    },
-    expert: {
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+1 (555) 987-6543",
-      location: "New York, NY",
-      bio: "Senior web developer specializing in React and Next.js with 8 years of experience building scalable applications.",
-      joinDate: "March 2022",
-      role: "expert",
-      skills: ["React", "Next.js", "TypeScript", "Node.js", "UI/UX"],
-      hourlyRate: 150,
-      availability: true,
-      education: ["B.S. Computer Science, MIT", "Full Stack Web Development Certification"],
-      rating: 4.8,
-      stats: {
-        sessions: 36,
-        clients: 24,
-        revenue: 5400,
-      },
-    },
-    client: {
-      name: "Alice Williams",
-      email: "alice@example.com",
-      phone: "+1 (555) 456-7890",
-      location: "Chicago, IL",
-      bio: "Product manager looking to improve technical skills and team collaboration.",
-      joinDate: "June 2022",
-      role: "client",
-      communicationPreference: "Email",
-      projectInterests: ["Web Development", "Mobile Apps", "UI/UX Design"],
-      budgetRange: [5000, 10000],
-      stats: {
-        sessions: 12,
-        experts: 5,
-        workspaces: 2,
-      },
-    },
+  // Open modal from ProfileCard
+  const handleEditProfile = () => setEditOpen(true)
+
+  // Handle avatar upload
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setAvatarPreview(ev.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
-  // Get user data based on current role
-  const user = userData[role]
-
-  // Create profile data for completion calculation
-  const profileData: UserProfileData = {
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    location: user.location,
-    bio: user.bio,
-    avatar: user.avatar,
-    role: role,
-    ...(role === "owner" && {
-      company: user.company,
-      businessCategory: user.businessCategory,
-      paymentInfo: user.paymentInfo,
-    }),
-    ...(role === "expert" && {
-      skills: user.skills,
-      hourlyRate: user.hourlyRate,
-      availability: user.availability,
-      education: user.education,
-    }),
-    ...(role === "client" && {
-      communicationPreference: user.communicationPreference,
-      projectInterests: user.projectInterests,
-      budgetRange: user.budgetRange,
-    }),
-  }
-
-  // Handle completing a profile field
-  const handleCompleteField = (field: string) => {
-    setEditingField(field)
-  }
-
-  // Handle saving a profile field
-  const handleSaveField = (field: string, value: any) => {
-    // In a real app, this would update the user profile in the database
-    toast({
-      title: "Profile Updated",
-      description: `Your ${field} has been updated successfully.`,
-      duration: 3000,
-    })
+  // Save profile changes
+  const handleSave = () => {
+    const updatedProfile = { ...profile, avatar: avatarPreview }
+    setUser(updatedProfile)
+    if (token) {
+      updateUserProfile(token, updatedProfile)
+        .then(() => {
+          toast({ title: "Profile Updated", description: "Your profile has been updated." })
+        })
+        .catch((err) => {
+          toast({ title: "Error", description: "Failed to update profile. Please try again." })
+        })
+    } else {
+      toast({ title: "Profile Updated", description: "Your profile has been updated locally." })
+    }
+    setEditOpen(false)
   }
 
   return (
     <div className="space-y-6">
-      <ProfileCompletionIndicator profile={profileData} onCompleteField={handleCompleteField} />
+      <ProfileCompletionIndicator profile={profile} onCompleteField={setEditingField} />
+      <ProfileCard user={profile} onEdit={handleEditProfile} />
 
-      <ProfileCard user={profileData} />
+      {/* Profile Edit Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center">
+              <UserAvatar user={{ name: profile.name, email: profile.email, image: avatarPreview }} size="xl" />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+              />
+              <button
+                className="mt-2 text-blue-600 hover:underline text-sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Change Photo
+              </button>
+            </div>
+            <Input
+              value={profile.name}
+              onChange={e => setUser({ ...profile, name: e.target.value })}
+              placeholder="Name"
+            />
+            <Input
+              value={profile.email}
+              onChange={e => setUser({ ...profile, email: e.target.value })}
+              placeholder="Email"
+            />
+            <Input
+              value={profile.phone}
+              onChange={e => setUser({ ...profile, phone: e.target.value })}
+              placeholder="Phone"
+            />
+            <Input
+              value={profile.location}
+              onChange={e => setUser({ ...profile, location: e.target.value })}
+              placeholder="Location"
+            />
+            <Textarea
+              value={profile.bio}
+              onChange={e => setUser({ ...profile, bio: e.target.value })}
+              placeholder="Bio"
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <button className="px-4 py-2 rounded bg-gray-200" onClick={() => setEditOpen(false)}>Cancel</button>
+              <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={handleSave}>Save</button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {role === "owner" && (
+        {role === "owner" && profile.stats && (
           <>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Total Experts</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.experts}</div>
+                <div className="text-2xl font-bold">{profile.stats.experts}</div>
               </CardContent>
             </Card>
 
@@ -138,7 +134,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.sessions}</div>
+                <div className="text-2xl font-bold">{profile.stats.sessions}</div>
               </CardContent>
             </Card>
 
@@ -147,20 +143,20 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Workspaces</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.workspaces}</div>
+                <div className="text-2xl font-bold">{profile.stats.workspaces}</div>
               </CardContent>
             </Card>
           </>
         )}
 
-        {role === "expert" && (
+        {role === "expert" && profile.stats && (
           <>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.sessions}</div>
+                <div className="text-2xl font-bold">{profile.stats.sessions}</div>
               </CardContent>
             </Card>
 
@@ -169,7 +165,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.clients}</div>
+                <div className="text-2xl font-bold">{profile.stats.clients}</div>
               </CardContent>
             </Card>
 
@@ -178,20 +174,20 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${user.stats.revenue}</div>
+                <div className="text-2xl font-bold">${profile.stats.revenue}</div>
               </CardContent>
             </Card>
           </>
         )}
 
-        {role === "client" && (
+        {role === "client" && profile.stats && (
           <>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.sessions}</div>
+                <div className="text-2xl font-bold">{profile.stats.sessions}</div>
               </CardContent>
             </Card>
 
@@ -200,7 +196,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Experts Worked With</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.experts}</div>
+                <div className="text-2xl font-bold">{profile.stats.experts}</div>
               </CardContent>
             </Card>
 
@@ -209,7 +205,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-sm font-medium">Workspaces</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.stats.workspaces}</div>
+                <div className="text-2xl font-bold">{profile.stats.workspaces}</div>
               </CardContent>
             </Card>
           </>

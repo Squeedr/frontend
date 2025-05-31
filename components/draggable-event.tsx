@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useDrag } from "react-dnd"
 import { Clock, MapPin, MoreHorizontal } from "lucide-react"
 import { format, parseISO } from "date-fns"
@@ -22,13 +22,13 @@ export interface CalendarEvent {
   title: string
   start: string // ISO string
   end: string // ISO string
-  status: "upcoming" | "in-progress" | "completed" | "cancelled"
+  status: "upcoming" | "in-progress" | "completed" | "cancelled" | "recording"
   description?: string
   location?: string
   workspace?: string
 }
 
-interface DraggableEventProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DraggableEventProps {
   event: CalendarEvent
   onDrop: (event: CalendarEvent, date: Date, hour?: number) => void
   onEdit?: (event: CalendarEvent) => void
@@ -37,6 +37,8 @@ interface DraggableEventProps extends React.HTMLAttributes<HTMLDivElement> {
   isDayView?: boolean
   startHour?: number
   endHour?: number
+  className?: string
+  style?: React.CSSProperties
 }
 
 export function DraggableEvent({
@@ -53,6 +55,7 @@ export function DraggableEvent({
   ...props
 }: DraggableEventProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const elementRef = useRef<HTMLDivElement>(null)
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "EVENT",
     item: { event },
@@ -61,11 +64,15 @@ export function DraggableEvent({
     }),
   }))
 
+  // Apply the drag ref to our element ref
+  drag(elementRef)
+
   const statusClasses = {
     upcoming: "bg-blue-100 text-blue-800 border-blue-300",
     "in-progress": "bg-green-100 text-green-800 border-green-300",
     completed: "bg-gray-100 text-gray-800 border-gray-300",
     cancelled: "bg-red-100 text-red-800 border-red-300",
+    recording: "bg-purple-100 text-purple-800 border-purple-300",
   }
 
   // Format times for display
@@ -110,7 +117,7 @@ export function DraggableEvent({
 
   return (
     <div
-      ref={drag}
+      ref={elementRef}
       className={cn(
         "group relative rounded border text-xs p-1.5 transition-all",
         statusClasses[event.status],
@@ -196,6 +203,7 @@ export function DraggableEvent({
                     event.status === "in-progress" && "bg-green-100 text-green-800",
                     event.status === "completed" && "bg-gray-100 text-gray-800",
                     event.status === "cancelled" && "bg-red-100 text-red-800",
+                    event.status === "recording" && "bg-purple-100 text-purple-800",
                   )}
                 >
                   {event.status.replace("-", " ")}

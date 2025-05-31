@@ -13,12 +13,27 @@ import { BarChart, LineChart, PieChart } from "@/components/ui/chart"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Download, FileText, Users } from "lucide-react"
-import { CreateActionButton } from "@/components/create-action-button"
 import { UpcomingBookings } from "@/components/workspace/upcoming-bookings"
+import { useSessionStore } from "@/stores/sessionStore"
+import { v4 as uuidv4 } from "uuid"
+import type { Session } from "@/lib/mock-data"
 
 export default function DashboardPage() {
-  const { role } = useRole()
+  const { role, isLoading } = useRole()
   const [activeTab, setActiveTab] = useState("overview")
+
+  // Show loading state while role is being determined
+  if (isLoading || role === null) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold">Loading Dashboard...</h2>
+          <p className="text-muted-foreground">Please wait while we load your personalized dashboard.</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -34,6 +49,8 @@ export default function DashboardPage() {
     // In a real app, you would generate and download the export file
     await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate export delay
   }
+
+  const addSession = useSessionStore((state) => state.addSession)
 
   return (
     <div className="space-y-6">
@@ -54,7 +71,6 @@ export default function DashboardPage() {
               { id: "json", label: "JSON", description: "Export as JSON data" },
             ]}
           />
-          <CreateActionButton />
         </div>
       </div>
 
@@ -189,16 +205,15 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <PieChart
-                  data={[
-                    { name: "Experts", value: 35, color: "var(--expert-primary)" },
-                    { name: "Clients", value: 55, color: "var(--client-primary)" },
-                    { name: "Admins", value: 10, color: "var(--owner-primary)" },
-                  ]}
-                  nameKey="name"
-                  valueKey="value"
-                  colorKey="color"
-                  height={300}
-                />
+                                  data={[
+                                      { name: "Experts", value: 35, color: "var(--expert-primary)" },
+                                      { name: "Clients", value: 55, color: "var(--client-primary)" },
+                                      { name: "Admins", value: 10, color: "var(--owner-primary)" },
+                                  ]}
+                                  nameKey="name"
+                                  valueKey="value"
+                                  colorKey="color"
+                                  height={300} xAxisKey={""}                />
               </CardContent>
             </Card>
           </div>
@@ -346,8 +361,7 @@ export default function DashboardPage() {
                   nameKey="name"
                   valueKey="value"
                   colorKey="color"
-                  height={300}
-                />
+                  height={300} xAxisKey={""}                />
               </CardContent>
             </Card>
 
@@ -367,8 +381,7 @@ export default function DashboardPage() {
                   nameKey="name"
                   valueKey="value"
                   colorKey="color"
-                  height={300}
-                />
+                  height={300} xAxisKey={""}                />
               </CardContent>
             </Card>
           </div>
@@ -530,8 +543,7 @@ export default function DashboardPage() {
                   nameKey="name"
                   valueKey="value"
                   colorKey="color"
-                  height={300}
-                />
+                  height={300} xAxisKey={""}                />
               </CardContent>
             </Card>
           </div>

@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 interface UserAvatarProps {
   user: {
@@ -59,11 +60,18 @@ export function UserAvatar({ user, size = "md", className, fallbackClassName }: 
 
   return (
     <Avatar className={cn(sizeClasses[size], "transition-opacity hover:opacity-80", className)}>
-      <AvatarImage
-        src={user.image || `/placeholder.svg?height=80&width=80&query=${user.name || "User"}`}
-        alt={user.name || "User"}
-      />
-      <AvatarFallback className={cn(getColorClass(), fallbackClassName)}>{getInitials()}</AvatarFallback>
+      {user.image ? (
+        <OptimizedImage
+          src={user.image}
+          alt={user.name || "User"}
+          width={size === "sm" ? 32 : size === "md" ? 40 : size === "lg" ? 48 : 64}
+          height={size === "sm" ? 32 : size === "md" ? 40 : size === "lg" ? 48 : 64}
+          objectFit="cover"
+          className="h-full w-full rounded-full"
+        />
+      ) : (
+        <AvatarFallback className={cn(getColorClass(), fallbackClassName)}>{getInitials()}</AvatarFallback>
+      )}
     </Avatar>
   )
 }

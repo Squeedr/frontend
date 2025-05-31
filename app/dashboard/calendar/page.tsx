@@ -33,7 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { BookSessionModal } from "@/components/book-session-modal"
 
 // Helper function to get days in a month
 const getDaysInMonth = (year: number, month: number) => {
@@ -796,12 +795,6 @@ export default function CalendarPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <BookSessionModal />
-              <Button className="gap-2" onClick={() => handleOpenCreateModal()}>
-                <Plus className="h-4 w-4" />
-                Add Event
-              </Button>
-
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="icon">

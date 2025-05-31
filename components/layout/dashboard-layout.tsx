@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
 import { UpcomingSessionsDropdown } from "@/components/upcoming-sessions-dropdown"
 import { NotificationAlert } from "@/components/notification-alert"
+import { getAvatarImage } from "@/lib/image-utils"
 
 interface NavItemProps {
   href: string
@@ -204,7 +205,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <NotificationAlert />
           <RoleSwitcher />
           <Avatar>
-            <AvatarImage src="/stylized-jd-initials.png" alt="User" />
+            <AvatarImage src={getAvatarImage("stylized-jd-initials.png")} alt="User" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
         </div>

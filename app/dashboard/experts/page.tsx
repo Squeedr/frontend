@@ -12,6 +12,7 @@ import { experts, filterOptions } from "@/lib/mock-data"
 import type { Expert } from "@/lib/mock-data"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { CreateExpertModal } from "@/components/create-expert-modal"
 
 export default function ExpertsPage() {
   const { role } = useRole()
@@ -75,13 +76,6 @@ export default function ExpertsPage() {
     }
   }
 
-  const handleAddExpert = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "The ability to add new experts will be available soon.",
-    })
-  }
-
   const handleExpertAction = (action: string, expert: Expert) => {
     toast({
       title: `${action} - ${expert.name}`,
@@ -104,9 +98,15 @@ export default function ExpertsPage() {
           }}
         />
 
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddExpert}>
-          Add Expert
-        </Button>
+        <CreateExpertModal
+          onExpertCreated={(expert) => {
+            setFilteredExperts((prev) => [expert, ...prev])
+            toast({
+              title: "Expert Created",
+              description: `${expert.name} has been added as an expert.`,
+            })
+          }}
+        />
       </div>
 
       {isLoading ? (

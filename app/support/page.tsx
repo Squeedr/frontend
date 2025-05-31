@@ -83,12 +83,12 @@ export default function SupportPage() {
     )
   )
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
     setContactForm(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
     if (!contactForm.name || !contactForm.email || !contactForm.subject || !contactForm.message) {
       toast({

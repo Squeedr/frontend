@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
@@ -37,7 +36,6 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useRole } from "@/hooks/use-role"
 import { NotificationAlert } from "@/components/notification-alert"
 import { Logo } from "@/components/ui/logo" // Properly import the Logo component
 import { Separator } from "@/components/ui/separator"
@@ -50,18 +48,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { RoleSwitcher } from "@/components/role-switcher"
 import { useProfileReminders } from "@/hooks/use-profile-reminders" // Import the profile reminders hook
 import { ProfileReminderNotification } from "@/components/profile/profile-reminder-notification" // Import the notification component
+import { getAvatarImage } from "@/lib/image-utils"
+import { ProfileMenu } from "@/components/profile-menu"
+import { useUser } from "@/lib/user-context"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useRole } from "@/hooks/use-role" // Add this import
 
 // Dynamically import heavy components
 const UpcomingSessionsDropdown = dynamic(
   () => import("@/components/upcoming-sessions-dropdown").then(mod => mod.UpcomingSessionsDropdown),
-  { 
-    ssr: false,
-    loading: () => <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
-  }
-)
-
-const ProfileMenu = dynamic(
-  () => import("@/components/profile-menu"),
   { 
     ssr: false,
     loading: () => <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
@@ -209,21 +205,20 @@ const workspaceItems: NavItem[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { role, setRole, isLoading } = useRole()
+  const { user, setUser } = useUser() // Remove setRole from useUser
+  const { role, logout, switchRole } = useRole() // Add switchRole to the destructuring
   const { toast } = useToast()
   const { shouldShowReminder, dismissReminder, snoozeReminder } = useProfileReminders()
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [isOffline, setIsOffline] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [screenWidth, setScreenWidth] = useState<number | undefined>(undefined)
-  const [userCollapsedPreference, setUserCollapsedPreference] = useState<boolean | null>(null)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
 
-  // Filter navigation items based on role
-  const filteredNavItems = navItems.filter((item) => item.roles.includes(role))
-  const filteredWorkspaceItems = workspaceItems.filter((item) => item.roles.includes(role))
+  // Filter navigation items based on user role (use role from useRole hook)
+  const filteredNavItems = navItems.filter((item) => role && item.roles.includes(role))
+  const filteredWorkspaceItems = workspaceItems.filter((item) => role && item.roles.includes(role))
 
   // Handle window resize for auto-collapse
   const shouldAutoCollapse = (width: number): boolean => {
@@ -234,7 +229,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     setMounted(true)
     const handleResize = () => {
       if (shouldAutoCollapse(window.innerWidth)) {
-        setCollapsed(true)
+        setSidebarExpanded(true)
       }
     }
 
@@ -243,41 +238,30 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     // Add event listeners
     window.addEventListener("resize", handleResize)
-    window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
 
     return () => {
       window.removeEventListener("resize", handleResize)
-      window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
     }
   }, [])
 
-  const handleOnline = () => setIsOffline(false)
-  const handleOffline = () => setIsOffline(true)
-
   const toggleSidebar = () => {
-    setCollapsed(!collapsed)
+    setSidebarExpanded(!sidebarExpanded)
   }
 
   const handleLogout = () => {
-    // Implement logout logic here
+    logout() // Use logout from useRole hook
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     })
-    router.push("/")
   }
 
-  // Determine if sidebar should appear expanded (either permanently or temporarily on hover)
-  const sidebarExpanded = !collapsed || isHovering
-
-  if (!mounted || isLoading) {
+  if (!mounted) {
     return <PageLoader />
   }
 
-  // Get role-specific styles
-  const roleStyles = getRoleStyles(role)
+  // Get role-specific styles (use role from useRole hook)
+  const roleStyles = getRoleStyles(role || 'client')
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -296,8 +280,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           "hidden md:flex md:flex-col md:fixed md:inset-y-0 z-20 transition-all duration-200 ease-in-out",
           sidebarExpanded ? "md:w-64" : "md:w-16",
         )}
-        onMouseEnter={() => collapsed && setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseEnter={() => !sidebarExpanded && setShowScrollIndicator(true)}
+        onMouseLeave={() => setShowScrollIndicator(false)}
       >
         <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
           {/* Logo section */}
@@ -310,7 +294,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Link href="/dashboard" className="flex items-center">
               <Logo
                 size="responsive"
-                collapsed={!sidebarExpanded && !isHovering}
+                collapsed={!sidebarExpanded && !showScrollIndicator}
                 responsiveSize={{
                   default: "sm",
                   sm: "sm",
@@ -328,9 +312,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className={cn("flex items-center", !sidebarExpanded && "justify-center flex-col")}>
               <UserAvatarWithDetails
                 user={{
-                  name: "John Doe",
-                  email: "john@squeedr.com",
-                  image: "/stylized-jd-initials.png",
+                  name: user.name,
+                  email: user.email,
+                  image: user.avatar,
                 }}
                 showDetails={sidebarExpanded}
                 size="md"
@@ -338,7 +322,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
               {sidebarExpanded && (
                 <div className="ml-2 mt-1">
-                  <span className="text-xs text-gray-500">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                  <span className="text-xs text-gray-500">{role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Loading...'}</span>
                 </div>
               )}
             </div>
@@ -437,7 +421,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   {sidebarExpanded && (
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                        {collapsed ? "Expand" : "Collapse"}
+                        {sidebarExpanded ? "Collapse" : "Expand"}
                       </p>
                     </div>
                   )}
@@ -452,11 +436,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "fixed inset-0 z-40 md:hidden",
-          isMobileNavOpen ? "block" : "hidden",
+          mobileNavOpen ? "block" : "hidden",
         )}
       >
         {/* Backdrop */}
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setIsMobileNavOpen(false)} />
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileNavOpen(false)} />
 
         {/* Mobile menu */}
         <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
@@ -464,7 +448,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              onClick={() => setIsMobileNavOpen(false)}
+              onClick={() => setMobileNavOpen(false)}
             >
               <span className="sr-only">Close sidebar</span>
               <X className="h-6 w-6 text-white" aria-hidden="true" />
@@ -488,7 +472,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         "group flex items-center px-3 py-2.5 text-base font-medium rounded-md transition-colors",
                         isActive ? roleStyles.activeNavClass : `text-gray-700 ${roleStyles.hoverNavClass}`,
                       )}
-                      onClick={() => setIsMobileNavOpen(false)}
+                      onClick={() => setMobileNavOpen(false)}
                     >
                       <Icon
                         className={cn(
@@ -526,7 +510,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                             "group flex items-center px-3 py-2.5 text-base font-medium rounded-md transition-colors",
                             isActive ? roleStyles.activeNavClass : `text-gray-700 ${roleStyles.hoverNavClass}`,
                           )}
-                          onClick={() => setIsMobileNavOpen(false)}
+                          onClick={() => setMobileNavOpen(false)}
                         >
                           <Icon
                             className={cn(
@@ -546,39 +530,39 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               {/* Mobile user controls */}
               <div className="py-6">
                 <div className="flex items-center mb-4">
-                  <UserAvatar
+                  <UserAvatar 
                     user={{
-                      name: "John Doe",
-                      email: "john@squeedr.com",
-                      image: "/stylized-jd-initials.png",
+                      name: user.name,
+                      email: user.email,
+                      image: user.avatar,
                     }}
-                    size="sm"
+                    size="md"
                   />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">John Doe</p>
+                    <p className="text-sm font-medium text-gray-900">{role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Loading...'}</p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
                           <UserCircle className="h-3 w-3" />
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                          {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Loading...'}
                           <ChevronDown className="h-3 w-3" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-32">
                         <DropdownMenuItem
-                          onClick={() => setRole("owner")}
+                          onClick={() => switchRole("owner")}
                           className={role === "owner" ? "bg-blue-50 dark:bg-blue-900/20" : ""}
                         >
                           Owner
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => setRole("expert")}
+                          onClick={() => switchRole("expert")}
                           className={role === "expert" ? "bg-gray-50 dark:bg-gray-900/20" : ""}
                         >
                           Expert
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => setRole("client")}
+                          onClick={() => switchRole("client")}
                           className={role === "client" ? "bg-purple-50 dark:bg-purple-900/20" : ""}
                         >
                           Client
@@ -606,7 +590,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "flex flex-col flex-1 transition-all duration-200 ease-in-out",
-          collapsed && !isHovering ? "md:pl-16" : "md:pl-64",
+          !sidebarExpanded ? "md:pl-16" : "md:pl-64",
         )}
       >
         {/* Header */}
@@ -615,7 +599,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             className="-m-2.5 p-2.5 text-gray-700 md:hidden"
-            onClick={() => setIsMobileNavOpen(true)}
+            onClick={() => setMobileNavOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
             <Menu className="h-6 w-6" aria-hidden="true" />
@@ -655,13 +639,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <main className={cn("flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50")}>
-          {isOffline && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>You are offline</AlertTitle>
-              <AlertDescription>Some features may be limited. Please check your internet connection.</AlertDescription>
-            </Alert>
-          )}
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>

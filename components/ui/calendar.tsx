@@ -9,7 +9,9 @@ import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+function Calendar({ className, classNames, showOutsideDays = true, disabled, ...props }: CalendarProps) {
+  // Default: disable all dates before today if no disabled prop is provided
+  const defaultDisabled = (date: Date) => date < new Date(new Date().setHours(0, 0, 0, 0));
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -43,10 +45,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-      }}
+      disabled={disabled ?? defaultDisabled}
       {...props}
     />
   )
