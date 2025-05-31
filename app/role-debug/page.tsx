@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RoleSwitcher } from "@/components/role-switcher"
 
 export default function RoleDebugPage() {
-  const { role, setRole, isChangingRole, previousRole, roleTransitionState } = useRole()
+  const { role, setRole, isLoading } = useRole()
   const [mounted, setMounted] = useState(false)
   const [localStorageValue, setLocalStorageValue] = useState<string | null>(null)
 
@@ -46,18 +46,8 @@ export default function RoleDebugPage() {
             </div>
 
             <div>
-              <p className="font-medium">Previous Role:</p>
-              <p className="text-lg bg-gray-100 p-2 rounded">{previousRole || "None"}</p>
-            </div>
-
-            <div>
-              <p className="font-medium">Transition State:</p>
-              <p className="text-lg bg-gray-100 p-2 rounded">{roleTransitionState}</p>
-            </div>
-
-            <div>
-              <p className="font-medium">Is Changing Role:</p>
-              <p className="text-lg bg-gray-100 p-2 rounded">{isChangingRole ? "Yes" : "No"}</p>
+              <p className="font-medium">Loading:</p>
+              <p className="text-lg bg-gray-100 p-2 rounded">{isLoading.toString()}</p>
             </div>
 
             <div>

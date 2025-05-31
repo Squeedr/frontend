@@ -13,7 +13,7 @@ interface SimpleRoleContextType {
 const SimpleRoleContext = createContext<SimpleRoleContextType | undefined>(undefined)
 
 export function SimpleRoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<Role>("expert")
+  const [role, setRoleState] = useState<Role>("client")
   const { toast } = useToast()
 
   // Load role from localStorage on mount
