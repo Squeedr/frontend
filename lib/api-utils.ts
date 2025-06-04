@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 type FetchOptions = RequestInit & {
   params?: Record<string, string>
@@ -204,9 +204,10 @@ export function useFetch<T>(
   }, [url, options, useCache])
 
   // Fetch data on mount and when dependencies change
-  useCallback(() => {
+  useEffect(() => {
     fetchData()
-  }, [fetchData])()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData])
 
   return { data, isLoading, error, refetch: fetchData }
 }
